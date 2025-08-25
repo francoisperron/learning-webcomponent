@@ -1,7 +1,23 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
+import {defineConfig} from 'vite'
+import fs from 'fs'
+import path from 'path'
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+    plugins: [
+        {
+            name: 'transform-public-config',
+            configureServer(server) {
+                server.middlewares.use((req, res, next) => {
+                    if (req.url === '/config.json') {
+                        const configPath = path.resolve(__dirname, 'env/local/config.json')
+                        let content = fs.readFileSync(configPath, 'utf-8')
+                        res.setHeader('Content-Type', 'application/json')
+                        res.end(content)
+                        return
+                    }
+                    next()
+                })
+            }
+        }
+    ]
 })
