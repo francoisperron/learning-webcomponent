@@ -1,18 +1,16 @@
 import {defineConfig} from 'vite'
-import fs from 'fs'
-import path from 'path'
 
 export default defineConfig({
     plugins: [
         {
             name: 'transform-public-config',
             configureServer(server) {
-                server.middlewares.use((req, res, next) => {
+                server.middlewares.use(async (req, res, next) => {
+                    // @ts-ignore
                     if (req.url === '/config.json') {
-                        const configPath = path.resolve(__dirname, 'env/local/config.json')
-                        let content = fs.readFileSync(configPath, 'utf-8')
+                        let content = await import('./env/local/config.json')
                         res.setHeader('Content-Type', 'application/json')
-                        res.end(content)
+                        res.end(JSON.stringify(content.default))
                         return
                     }
                     next()
